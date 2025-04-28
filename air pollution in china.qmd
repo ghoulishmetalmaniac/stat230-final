@@ -1,0 +1,82 @@
+---
+title: "Air pollution in China"
+author: "Myrsine Lachanaris"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(plotly)
+pollution <- read_csv("data/air_pollution_china.csv")
+```
+
+# Questions:
+
+## Which city gets the most CO pollution in the summer?
+
+### Descriptive analysis
+
+```{r}
+summer <- pollution |>
+  filter(Season == "Summer")
+summer |>
+  ggplot(aes(x = `City`, y = `CO (mg/m³)`)) +
+  geom_boxplot()
+```
+
+```{r}
+summer |>
+  group_by(City) |>
+  summarize(mean = mean(`CO (mg/m³)`), sd = sd(`CO (mg/m³)`),
+            min = min(`CO (mg/m³)`), max = max(`CO (mg/m³)`))
+```
+
+### Inferential statistics
+
+```{r}
+anova <- aov(`CO (mg/m³)` ~ City, data = summer)
+summary(anova)
+```
+
+The p-value is greater than 0.05, which means that there is no significant difference in CO levels among the cities.
+
+## What are the effects of CO on temperature in the winter?
+
+### Descriptive analysis
+
+```{r}
+winter <- pollution |>
+  filter(Season == "Winter")
+b <- winter |>
+  ggplot(aes(y = `Temperature (°C)`, x = `CO (mg/m³)`)) +
+  geom_point(alpha = 0.5)
+ggplotly(b)
+```
+
+```{r}
+winter |>
+  summarize(mean = mean(`CO (mg/m³)`), sd = sd(`CO (mg/m³)`),
+            min = min(`CO (mg/m³)`), max = max(`CO (mg/m³)`))
+winter |>
+  summarize(mean = mean(`Temperature (°C)`), sd = sd(`Temperature (°C)`), 
+            min = min(`Temperature (°C)`), max = max(`Temperature (°C)`))
+```
+
+### Inferential statistics
+
+```{r}
+cor.test(winter$`Temperature (°C)`, winter$`CO (mg/m³)`)
+```
+
+H\^0: There is no correlation between temperature and CO levels.
+
+H\^1: There is correlation between temperature and CO levels.
+
+Since the p-value is higher than 0.05, we cannot reject the null hypothesis. Therefore, we can determine that there is no correlation between temperature and CO levels in the winter.
+
+## Conclusion
+
+I used a box plot for the first question to compare the CO levels between the cities during the summer. I then used ANOVA to further see if there are any significant differences in CO levels between the cities, which there are none.
+
+I used a scatter plot for the second question to plot CO levels vs temperature in the winter among all cities. I then calculated the correlation between CO levels and temperature, which resulted in no correlation. This proved the graph.
